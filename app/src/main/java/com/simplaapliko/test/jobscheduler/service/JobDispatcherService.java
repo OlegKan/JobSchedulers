@@ -16,22 +16,37 @@
 
 package com.simplaapliko.test.jobscheduler.service;
 
+import android.os.Handler;
+
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
+import com.simplaapliko.test.jobscheduler.util.LogManager;
 
 public class JobDispatcherService extends JobService {
 
     @Override
-    public boolean onStartJob(JobParameters job) {
+    public boolean onStartJob(final JobParameters params) {
+        LogManager.get().log("on start JobDispatcher job, start: " + params.getTag());
 
+        long duration = 5000;
 
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                LogManager.get().log("on start JobDispatcher job, end: " + params.getTag());
 
+                jobFinished(params, false);
+            }
+        }, duration);
 
         return false; // Answers the question: "Is there still work going on?"
     }
 
     @Override
-    public boolean onStopJob(JobParameters job) {
+    public boolean onStopJob(JobParameters params) {
+        LogManager.get().log("on stop JobDispatcher job: " + params.getTag());
+
         return false; // Answers the question: "Should this job be retried?"
     }
 }

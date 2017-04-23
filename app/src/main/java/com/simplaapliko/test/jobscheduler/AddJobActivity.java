@@ -35,6 +35,14 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+import com.firebase.jobdispatcher.Constraint;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.RetryStrategy;
+import com.firebase.jobdispatcher.Trigger;
+import com.simplaapliko.test.jobscheduler.service.JobDispatcherService;
 import com.simplaapliko.test.jobscheduler.service.JobSchedulerService;
 import com.simplaapliko.test.jobscheduler.util.LogManager;
 import com.simplaapliko.test.jobscheduler.util.PreferenceManager;
@@ -148,11 +156,9 @@ public class AddJobActivity extends AppCompatActivity {
                 }
             }
 
-            boolean requiresUnmetered = mWiFiConnectivityRadioButton.isChecked();
-            boolean requiresAnyConnectivity = mAnyConnectivityRadioButton.isChecked();
-            if (requiresUnmetered) {
+            if (mWiFiConnectivityRadioButton.isChecked()) {
                 builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED);
-            } else if (requiresAnyConnectivity) {
+            } else if (mAnyConnectivityRadioButton.isChecked()) {
                 builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
             }
 
@@ -169,6 +175,81 @@ public class AddJobActivity extends AppCompatActivity {
     }
 
     private void scheduleFirebaseJobDispatcher() {
+        LogManager.get().log("schedule JobDispatcher job, start. id: " + mJobId);
+
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+        Job.Builder builder = dispatcher.newJobBuilder();
+
+        // the JobService that will be called
+        builder.setService(JobDispatcherService.class);
+
+        if (mPeriodicRadioButton.isChecked()) {
+            String interval = mIntervalEditText.getText().toString();
+            int start = 0;
+            if (!TextUtils.isEmpty(interval)) {
+                start = Integer.valueOf(interval);
+            }
+            int end = start;
+            start = Math.min(0, start - 5);
+
+            builder.setRecurring(true);
+
+            // start between @start and @end seconds from now
+            builder.setTrigger(Trigger.executionWindow(start, end));
+        } else if (mOneTimeRadioButton.isChecked()) {
+            builder.setRecurring(false);
+
+            String delay = mDelayEditText.getText().toString();
+            int start = 0;
+            if (!TextUtils.isEmpty(delay)) {
+                start = Integer.valueOf(delay);
+            }
+
+            String deadline = mDeadlineEditText.getText().toString();
+            int end = 0;
+            if (!TextUtils.isEmpty(deadline)) {
+                end = Integer.valueOf(deadline);
+            }
+
+            // start between @start and @end seconds from now
+            builder.setTrigger(Trigger.executionWindow(start, end));
+        }
+
+        // constraints that need to be satisfied for the job to run
+        if (mWiFiConnectivityRadioButton.isChecked()) {
+            builder.addConstraint(Constraint.ON_UNMETERED_NETWORK);
+        } else if (mAnyConnectivityRadioButton.isChecked()) {
+            builder.addConstraint(Constraint.ON_ANY_NETWORK);
+        }
+
+        if (mRequiresIdleCheckbox.isChecked()) {
+            // not applicable
+        }
+
+        if (mRequiresChargingCheckBox.isChecked()) {
+            builder.addConstraint(Constraint.DEVICE_CHARGING);
+        }
+
+        // don't persist past a device reboot
+        if (mPersistedCheckbox.isChecked()) {
+            builder.setLifetime(Lifetime.FOREVER);
+        } else {
+            builder.setLifetime(Lifetime.UNTIL_NEXT_BOOT);
+        }
+
+        // uniquely identifies the job
+        builder.setTag("id_" + mJobId);
+
+        // don't overwrite an existing job with the same tag
+        builder.setReplaceCurrent(true);
+
+        // retry with exponential backoff
+        builder.setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL);
+
+        dispatcher.mustSchedule(builder.build());
+
+        LogManager.get().log("schedule JobDispatcher job, end. id: " + mJobId);
+
         sendOkResult();
     }
 

@@ -26,6 +26,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.simplaapliko.test.jobscheduler.util.LogManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -105,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             JobScheduler js = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
             js.cancelAll();
+
+            FirebaseJobDispatcher fjd = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+            fjd.cancelAll();
         }
     }
 
