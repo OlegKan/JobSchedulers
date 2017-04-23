@@ -19,6 +19,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.simplaapliko.test.jobscheduler">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -43,8 +44,6 @@
         <activity
             android:name=".AddJobActivity"
             android:label="@string/activity_add_job"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".MainActivity">
             <meta-data
