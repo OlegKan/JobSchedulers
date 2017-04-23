@@ -16,6 +16,7 @@
 
 package com.simplaapliko.test.jobscheduler;
 
+import android.app.job.JobScheduler;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -59,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_add:
                 onAddJobClick();
                 return true;
+            case R.id.action_cancel_all_jobs:
+                onCancelAllJobsClick();
+                return true;
             case R.id.action_clear:
                 onClearLogClick();
                 return true;
@@ -95,6 +99,13 @@ public class MainActivity extends AppCompatActivity {
     private void onAddJobClick() {
         Intent intent = AddJobActivity.getStartIntent(this);
         startActivityForResult(intent, 1);
+    }
+
+    private void onCancelAllJobsClick() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            JobScheduler js = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+            js.cancelAll();
+        }
     }
 
     private void onClearLogClick() {

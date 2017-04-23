@@ -47,4 +47,5 @@
     <string name="periodicity">Periodicity</string>
     <string name="schedule">Schedule</string>
     <string name="interval">Interval</string>
+    <string name="action_cancel_all_jobs">Cancel all jobs</string>
 </resources>
