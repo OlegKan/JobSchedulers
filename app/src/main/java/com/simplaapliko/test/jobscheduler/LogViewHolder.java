@@ -37,7 +37,7 @@ public class LogViewHolder extends RecyclerView.ViewHolder{
     }
 
     public void bind(LogEntry logEntry) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault());
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         mTime.setText(format.format(logEntry.time));
         mService.setText(logEntry.message);
     }
